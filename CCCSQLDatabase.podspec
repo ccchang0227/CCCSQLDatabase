@@ -1,42 +1,18 @@
-#
-# Be sure to run `pod lib lint CCCSQLDatabase.podspec' to ensure this is a
-# valid spec before submitting.
-#
-# Any lines starting with a # are optional, but their use is encouraged
-# To learn more about a Podspec see http://guides.cocoapods.org/syntax/podspec.html
-#
-
 Pod::Spec.new do |s|
   s.name             = 'CCCSQLDatabase'
-  s.version          = '0.1.0'
-  s.summary          = 'A short description of CCCSQLDatabase.'
+  s.version          = '1.5.0'
+  s.summary          = 'SQLite Database for saving data.'
 
-# This description is used to generate tags and improve search results.
-#   * Think: What does it do? Why did you write it? What is the focus?
-#   * Try to keep it short, snappy and to the point.
-#   * Write the description between the DESC delimiters below.
-#   * Finally, don't worry about the indent, CocoaPods strips it!
-
-  s.description      = <<-DESC
-TODO: Add long description of the pod here.
-                       DESC
-
-  s.homepage         = 'https://github.com/Chih-chieh Chang/CCCSQLDatabase'
-  # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
+  s.homepage         = 'https://github.com/ccchang0227/CCCSQLDatabase'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
-  s.author           = { 'Chih-chieh Chang' => 'ccch.realtouch@gmail.com' }
-  s.source           = { :git => 'https://github.com/Chih-chieh Chang/CCCSQLDatabase.git', :tag => s.version.to_s }
-  # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
+  s.authors          = { 'Chih-chieh Chang' => 'ccch.realtouch@gmail.com' }
+  s.source           = { :git => 'https://github.com/ccchang0227/CCCSQLDatabase.git', :tag => s.version.to_s }
 
-  s.ios.deployment_target = '8.0'
+  s.requires_arc = false
+  s.ios.deployment_target = '6.0'
+  s.tvos.deployment_target = '9.0'
 
-  s.source_files = 'CCCSQLDatabase/Classes/**/*'
-  
-  # s.resource_bundles = {
-  #   'CCCSQLDatabase' => ['CCCSQLDatabase/Assets/*.png']
-  # }
+  s.source_files = 'Classes/**/*.{h,m}'
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.dependency 'FMDB', '~> 2.6.2'
 end
