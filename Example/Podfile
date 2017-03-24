@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'CCCSQLDatabase_Example' do
+  pod 'CCCSQLDatabase', :path => '../'
+
+  target 'CCCSQLDatabase_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
