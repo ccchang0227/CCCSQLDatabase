@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'CCCSQLDatabase'
-  s.version          = '1.5.0'
+  s.version          = '1.5.1'
   s.summary          = 'SQLite Database for saving data.'
 
   s.homepage         = 'https://github.com/ccchang0227/CCCSQLDatabase'

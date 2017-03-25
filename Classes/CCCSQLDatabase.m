@@ -198,11 +198,12 @@
 }
 
 - (BOOL)checkVersion:(uint32_t)dbVersion {
-    if (self.dbVersion == 0) {
-        self.dbVersion = kCCCDefaultDBVersion;
+    uint32_t currentDbVersion = self.dbVersion;
+    if (currentDbVersion == 0) {
+        [self updateDbVersion:kCCCDefaultDBVersion];
     }
     else {
-        if (self.dbVersion != dbVersion) {
+        if (currentDbVersion != dbVersion) {
             return NO;
         }
     }
@@ -212,11 +213,11 @@
 
 #pragma mark - 新增資料
 
-- (sqlite_int64)insertDictionaryWithTableName:(NSString *)table dictionary:(NSDictionary *)dicData {
+- (sqlite_int64)insertDictionaryWithTableName:(NSString *)table dictionary:(NSDictionary *)dataDic {
     
     __block sqlite_int64 rowID = 0;
     [self.dbQueue inDatabase:^(FMDatabase *db) {
-        rowID = [self insertWithDB:db tableName:table dictionary:dicData];
+        rowID = [self insertWithDB:db tableName:table dictionary:dataDic];
     }];
     return rowID;
 }
@@ -225,7 +226,7 @@
 
 - (BOOL)modifyDataWithTableName:(NSString *)table
                      dictionary:(NSDictionary *)dataDic
-                     constraint:(NSString*)sql, ... {
+                     constraint:(NSString *)sql, ... {
     
     //分析輸入參數
     NSMutableArray *argsArray = [[NSMutableArray alloc] init];
