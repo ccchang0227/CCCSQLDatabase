@@ -25,14 +25,6 @@
 /**
  資料庫
  
- 使用:
- @code
- CCCSQLDatabase *mySql = [[CCCSQLDatabase alloc] initWithFileName:@"MyDatabase_en" directoryURL:nil delegate:self];
- [mySql addTable:kDBNewsTable withFieldsString:@"newsID,type"];
- [mySql addTable:kDBAlbumTable withFieldsString:@"albumID,type"];
- mySql.dbVersion = 1;
- @endcode
- 
  @class CCCSQLDatabase
  @author Chih-chieh Chang
  @version 1.5.0
@@ -63,7 +55,8 @@
 /// 資料庫開啟/建立失敗時呼叫
 - (void)onDatabaseOpenFailure;
 /// 當資料庫需要版本更新時呼叫
-- (void)onUpgradeFrom:(uint32_t)oldVersion to:(uint32_t)newVersion;
+- (void)onUpgradeFrom:(uint32_t)oldVersion
+                   to:(uint32_t)newVersion;
 
 #pragma mark -
 
@@ -233,6 +226,23 @@ withFieldsString:(NSString *)fieldsString;
 - (NSUInteger)countDataWithTableName:(NSString *)table
                           constraint:(NSString *)sql
                 withArgumentsInArray:(NSArray *)arguments;
+
+#pragma mark - For update table
+
+/**
+ 表單更新時，新建欄位
+ */
+- (BOOL)addNewFields:(NSArray<NSString *> *)fieldNames intoTable:(NSString *)table;
+
+/**
+ 表單更新時，修改欄位名稱
+ */
+- (BOOL)renameField:(NSString *)oldFieldName toNew:(NSString *)newFieldName inTable:(NSString *)table;
+
+/**
+ 表單更新時，刪除欄位
+ */
+- (BOOL)deleteFields:(NSArray<NSString *> *)fieldNames inTable:(NSString *)table;
 
 @end
 

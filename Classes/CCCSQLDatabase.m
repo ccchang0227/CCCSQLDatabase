@@ -551,6 +551,110 @@
     return totalCount;
 }
 
+#pragma mark - For update table
+
+- (BOOL)addNewFields:(NSArray<NSString *> *)fieldNames intoTable:(NSString *)table {
+    if (![self isStringNotEmpty:table] ||
+        !fieldNames ||
+        fieldNames.count == 0) {
+        return NO;
+    }
+    if (![self.tablesAndFields.allKeys containsObject:table]) {
+        // table 不存在，直接建新的
+        return [self addTable:table withFields:fieldNames];
+    }
+    
+    __block BOOL success = NO;
+    
+    [self.dbQueue inDatabase:^(FMDatabase *db) {
+        
+        for (NSString *fieldName in fieldNames) {
+            BOOL alterSuccess = [db executeUpdate:[NSString stringWithFormat:@"ALTER TABLE %@ ADD %@ text", table, fieldName]];
+            if (alterSuccess) {
+                self.tablesAndFields[table] = [self.tablesAndFields[table] arrayByAddingObject:fieldName];
+            }
+            success &= alterSuccess;
+        }
+        
+    }];
+    
+    return success;
+}
+
+- (BOOL)renameField:(NSString *)oldFieldName toNew:(NSString *)newFieldName inTable:(NSString *)table {
+    if (![self isStringNotEmpty:table] ||
+        ![self isStringNotEmpty:oldFieldName] ||
+        ![self isStringNotEmpty:newFieldName]) {
+        return NO;
+    }
+    if (![self.tablesAndFields.allKeys containsObject:table]) {
+        return NO;
+    }
+    
+    NSArray *oldFields = self.tablesAndFields[table];
+    if (![oldFields containsObject:oldFieldName]) {
+        // 舊的欄位不存在，直接新增新的欄位
+        return [self addNewFields:@[newFieldName] intoTable:table];
+    }
+    
+    __block BOOL success = NO;
+    
+    [self.dbQueue inDatabase:^(FMDatabase *db) {
+        
+        NSString *oldFieldsString = [[oldFields componentsJoinedByString:@","] stringByAppendingString:@","];
+        NSString *newFieldsString = [oldFieldsString stringByReplacingOccurrencesOfString:[NSString stringWithFormat:@"%@,", oldFieldName] withString:[NSString stringWithFormat:@"%@,", newFieldName]];
+        oldFieldsString = [oldFieldsString substringToIndex:oldFieldsString.length-1];
+        newFieldsString = [newFieldsString substringToIndex:newFieldsString.length-1];
+        
+        NSString *tmpTableName = [table stringByAppendingString:@"_tmp"];
+        NSString *insertFieldsPlaceholder = [[newFieldsString stringByReplacingOccurrencesOfString:@"," withString:@" text,"] stringByAppendingString:@" text"];
+        // 建立暫存table (新的column)
+        success = [db executeUpdate:[NSString stringWithFormat:@"CREATE TABLE IF NOT EXISTS %@ (uid integer primary key asc autoincrement, %@)", tmpTableName, insertFieldsPlaceholder]];
+        if (!success) {
+            return;
+        }
+        
+        // 從舊的table拷貝所有資料到暫存table (注意column名稱的修改)
+        success &= [db executeUpdate:[NSString stringWithFormat:@"INSERT INTO %@ (%@) SELECT %@ FROM %@", tmpTableName, newFieldsString, oldFieldsString, table]];
+        // 刪除舊的table
+        success &= [db executeUpdate:[NSString stringWithFormat:@"DROP TABLE %@", table]];
+        // 重新命名暫存table成原來的table name
+        success &= [db executeUpdate:[NSString stringWithFormat:@"ALTER TABLE %@ RENAME TO %@", tmpTableName, table]];
+        
+    }];
+    
+    return success;
+}
+
+- (BOOL)deleteFields:(NSArray<NSString *> *)fieldNames inTable:(NSString *)table {
+    if (![self isStringNotEmpty:table] ||
+        !fieldNames ||
+        fieldNames.count == 0) {
+        return NO;
+    }
+    if (![self.tablesAndFields.allKeys containsObject:table]) {
+        return NO;
+    }
+    
+    __block BOOL success = NO;
+    
+    [self.dbQueue inDatabase:^(FMDatabase *db) {
+        
+        NSMutableArray *fields = [NSMutableArray arrayWithArray:self.tablesAndFields[table]];
+        for (NSString *fieldName in fieldNames) {
+            BOOL alterSuccess = [db executeUpdate:[NSString stringWithFormat:@"ALTER TABLE %@ DROP %@ text", table, fieldName]];
+            if (alterSuccess) {
+                [fields removeObject:fieldName];
+            }
+            success &= alterSuccess;
+        }
+        self.tablesAndFields[table] = [NSArray arrayWithArray:fields];
+        
+    }];
+    
+    return success;
+}
+
 #pragma mark - Private
 
 - (sqlite_int64)insertWithDB:(FMDatabase *)db
